@@ -1,0 +1,12 @@
+# Never upload local secrets — Vercel holds these as project env vars instead.
+.env
+.env.local
+.env.*.local
+
+# Development-only artefacts
+screenshots
+test
+scripts/screenshots.mjs
+*.local.mjs
+.next
+node_modules

@@ -1,0 +1,144 @@
+/*
+ * Plumb — design tokens.
+ *
+ * Direction: crypto-brutalist terminal. Lineage is Vignelli's absolutism —
+ * one grid, a two-family lockset, bars and rules as structure — executed with
+ * the density of a professional trading desk. The brief is cockpit, not
+ * onboarding: this app computes liquidation prices and health factors, and it
+ * should look like the instrument that does that rather than the marketing
+ * page for one.
+ *
+ * Three rules govern everything below.
+ *
+ * 1. HAIRLINES DO THE STRUCTURAL WORK. Depth is a luminance ladder — each
+ *    surface a shade lighter than the one beneath — plus a 1px rule. Drop
+ *    shadows are near-absent by design; a glow would undo the whole thing.
+ *
+ * 2. AMBER IS SURGICAL. It marks live state, price movement, the active
+ *    position, and one primary action. It is never a fill, never a gradient,
+ *    never decoration. If amber appears somewhere it does not mean something,
+ *    that is a bug.
+ *
+ * 3. CORNERS ARE HARD. 2px, or none. The soft 20px panel is the single most
+ *    recognisable shape of generated UI, and this is the opposite of that.
+ *
+ * The name is the signature: a plumb line is a hairline with a weight on the
+ * end, the oldest instrument for finding true vertical. It runs down the left
+ * of the shell as a real element, not a metaphor.
+ */
+:root {
+  /*
+   * --- Grounds: a luminance ladder, blue-tinted ---
+   *
+   * Four steps, each measurably lighter than the last, so a panel reads as
+   * raised without a shadow under it. The blue tint is slight and deliberate;
+   * a neutral black goes muddy next to amber.
+   */
+  --background: #070910;
+  --card: #0c0f18;
+  --inset-solid: #11151f;
+  --muted: #1a1f2c;
+  /* The transparent twin, for wells and table headers inside a panel. */
+  --inset: rgba(232, 234, 240, 0.035);
+
+  /* --- Ink: bone, never pure white. #fff on near-black glares. --- */
+  --foreground: #e8eaf0;
+  --muted-foreground: #8b93a7;
+  --faint-foreground: rgba(232, 234, 240, 0.42);
+
+  /*
+   * --- Amber, rationed ---
+   *
+   * Chosen against the default: generated crypto UI reaches for violet or
+   * electric blue, and this app is neither playful nor institutional — it is
+   * a warning light. Amber is the colour of instrumentation.
+   */
+  --brand: #ff9422;
+  --brand-ink: #ffab52;   /* links and text, lifted for contrast on dark */
+  --brand-dim: rgba(255, 148, 34, 0.14);
+  --brand-edge: rgba(255, 148, 34, 0.38);
+
+  /* --- Hairlines. The most load-bearing tokens in the file. --- */
+  --border: rgba(232, 234, 240, 0.14);
+  --border-soft: rgba(232, 234, 240, 0.075);
+  /* The gridline texture behind the shell — felt, not seen. */
+  --grid-line: rgba(232, 234, 240, 0.032);
+
+  /* --- Status. One job each; brightened for a dark ground. --- */
+  --up: #2fd08a;
+  --up-dim: rgba(47, 208, 138, 0.13);
+  --down: #ff5470;
+  --down-dim: rgba(255, 84, 112, 0.13);
+  --hold: #ffc857;
+  --hold-dim: rgba(255, 200, 87, 0.13);
+
+  /*
+   * --- Type: a real pairing, two families, two jobs ---
+   *
+   * Archivo is a grotesk with actual bone structure — it tightens to a hard
+   * wordmark at heavy weights instead of going generic. IBM Plex Mono carries
+   * every figure, label and eyebrow: on a terminal the numbers are the
+   * content, and they must align down the column and never re-flow as they
+   * update. Two families is the whole lockset. Vignelli would allow no more.
+   */
+  --ui: 'Archivo', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --t-xs: 0.6875rem;
+  --t-sm: 0.8125rem;
+  --t-base: 0.9375rem;
+  --t-md: 1.0625rem;
+  --t-lg: 1.35rem;
+
+  /* Display squeezes hard; mono eyebrows open right up and go uppercase. */
+  --track-tight: -0.035em;
+  --track-eyebrow: 0.18em;
+
+  /* --- Rhythm --- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+
+  --shell: 820px;
+  --sidebar-w: 260px;
+
+  /*
+   * --- Form: hard edges ---
+   *
+   * 2px reads as machined. Panels take none at all, so they meet their
+   * hairlines square and the grid stays continuous across them.
+   */
+  --radius: 2px;
+  --radius-card: 0px;
+  --radius-sm: 2px;
+  --radius-pill: 2px;
+
+  /*
+   * --- Depth without glow ---
+   *
+   * A 1px top highlight is what actually lifts a surface here; the cast
+   * shadow is only deep enough to separate a floating panel from the page.
+   * Hover is a ring, never a bloom — a glowing card is the tell this whole
+   * direction exists to avoid.
+   */
+  --shadow-card: inset 0 1px 0 rgba(232, 234, 240, 0.04);
+  --shadow-panel: inset 0 1px 0 rgba(232, 234, 240, 0.05), 0 18px 40px -28px rgba(0, 0, 0, 0.9);
+  --shadow-hover: inset 0 1px 0 rgba(255, 148, 34, 0.12);
+  --shadow-float: 0 24px 64px -20px rgba(0, 0, 0, 0.92), inset 0 1px 0 rgba(232, 234, 240, 0.06);
+
+  /* Terminal motion is short and mechanical. Nothing eases in slowly. */
+  --dur-fast: 0.1s;
+  --dur: 0.16s;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

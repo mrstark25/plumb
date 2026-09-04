@@ -1,0 +1,125 @@
+.wallet-connect { position: relative; }
+
+/*
+ * The one primary action in the app, so it is the one place amber is allowed
+ * to be a fill rather than ink. Dark text on it, because amber is bright
+ * enough that bone type on top would be the weakest contrast on the page.
+ */
+.btn-primary {
+  padding: 0.45rem 0.95rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #0a0a0a;
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+.btn-primary:hover:not(:disabled) { background: var(--brand-ink); }
+.btn-primary:disabled { opacity: 0.55; cursor: progress; }
+
+.wallet-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 20;
+  min-width: 14.5rem;
+  padding: var(--s-1);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow-float);
+  animation: menu-in var(--dur) var(--ease) both;
+}
+
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.wallet-option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--foreground);
+  font-size: var(--t-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+.wallet-option:hover { background: var(--inset); }
+.wallet-option img { border-radius: var(--radius-sm); }
+
+.wallet-empty {
+  margin: 0;
+  padding: var(--s-3);
+  font-size: var(--t-sm);
+  line-height: 1.45;
+  color: var(--faint-foreground);
+}
+
+.wallet-error {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  width: max-content;
+  max-width: 18rem;
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius);
+  background: var(--down-dim);
+  font-size: var(--t-sm);
+  color: var(--down);
+}
+
+.wallet-status { display: flex; align-items: center; gap: var(--s-2); }
+
+.chain-select select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: var(--t-sm);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.chain-select select:hover { border-color: var(--brand-edge); }
+
+/* Connected account reads as a status pill, per the house pattern. */
+.account-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: var(--t-sm);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.account-chip:hover { border-color: var(--down); color: var(--down); }
+
+.account-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--up); }
+
+/* The destructive action stays out of the way until the chip is engaged. */
+.account-action {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition: max-width var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.account-chip:hover .account-action,
+.account-chip:focus-visible .account-action { max-width: 7rem; opacity: 1; }

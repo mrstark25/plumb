@@ -1,0 +1,76 @@
+.prose { display: grid; gap: var(--s-3); color: var(--muted-foreground); }
+
+.prose p { margin: 0; }
+
+.prose h3 {
+  margin: var(--s-2) 0 0;
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+.prose ul,
+.prose ol { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--s-2); }
+
+.prose li::marker { color: var(--faint-foreground); }
+
+.prose strong { color: var(--foreground); font-weight: 600; }
+
+.prose code {
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+  background: var(--inset);
+  font-family: var(--mono);
+  font-size: 0.9em;
+  color: var(--foreground);
+}
+
+/*
+ * Tables inside a reply. Styled to match the data panels elsewhere in the app
+ * so a model-authored comparison and a component-rendered one read as the same
+ * system, and scrolled inside their own container so a wide table can never
+ * make the page scroll sideways.
+ */
+.prose-table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.prose-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-sm);
+}
+
+.prose-table th,
+.prose-table td {
+  padding: var(--s-2) var(--s-3);
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose-table thead th {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  background: var(--inset);
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+
+.prose-table tbody tr { border-bottom: 1px solid var(--border-soft); }
+.prose-table tbody tr:last-child { border-bottom: 0; }
+
+.prose-table tbody td { color: var(--muted-foreground); }
+.prose-table tbody td:first-child { color: var(--foreground); font-weight: 500; }
+
+/* Figures right-align so magnitudes compare down the column. */
+.prose-table .is-num { text-align: right; white-space: nowrap; }

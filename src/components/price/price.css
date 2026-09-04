@@ -1,0 +1,116 @@
+.price-panel {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.price-panel:hover { border-color: var(--brand-edge); box-shadow: var(--shadow-hover); }
+
+.price-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--inset);
+}
+
+.price-head h3 { font-size: var(--t-sm); font-weight: 600; letter-spacing: -0.015em; }
+
+.price-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  white-space: nowrap;
+}
+
+.price-source::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--up);
+}
+
+/* --- Single asset: the price is the whole answer, so it leads. --- */
+.price-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-5) var(--s-4);
+}
+
+.price-hero-symbol {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  width: 100%;
+}
+
+.price-hero-value {
+  font-size: clamp(1.6rem, 1.3rem + 1.4vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: var(--track-tight);
+  color: var(--foreground);
+  line-height: 1.1;
+}
+
+.price-hero-cap { font-size: var(--t-xs); color: var(--faint-foreground); }
+
+/* --- Direction is the one place colour carries meaning here. --- */
+.price-change {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.price-change.is-up { color: var(--up); }
+.price-change.is-down { color: var(--down); }
+.price-change.is-flat { color: var(--faint-foreground); }
+
+/* --- Several assets: a table. --- */
+.price-scroll { overflow-x: auto; }
+
+.price-table {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  font-size: var(--t-sm);
+}
+
+.price-table th,
+.price-table td { padding: var(--s-3) var(--s-4); text-align: left; }
+
+.price-table thead th {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+
+.price-table tbody tr {
+  border-bottom: 1px solid var(--border-soft);
+  transition: background-color var(--dur-fast) var(--ease);
+}
+.price-table tbody tr:last-child { border-bottom: 0; }
+.price-table tbody tr:hover { background: var(--inset); }
+
+.price-symbol { font-weight: 600; color: var(--foreground); }
+.price-table td.num { color: var(--foreground); }
+.price-cap { color: var(--muted-foreground) !important; }

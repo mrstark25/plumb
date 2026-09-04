@@ -1,0 +1,116 @@
+.vault-panel {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.vault-panel:hover { border-color: var(--brand-edge); box-shadow: var(--shadow-hover); }
+
+.vault-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--inset);
+}
+
+.vault-head h3 { font-size: var(--t-sm); font-weight: 600; letter-spacing: -0.015em; }
+
+.vault-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  white-space: nowrap;
+}
+
+.vault-source::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--up);
+}
+
+.vault-scroll { overflow-x: auto; }
+
+.vault-table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: var(--t-sm);
+}
+
+.vault-table th,
+.vault-table td { padding: var(--s-3) var(--s-4); text-align: left; vertical-align: middle; }
+
+.vault-table thead th {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+
+.vault-table tbody tr {
+  border-bottom: 1px solid var(--border-soft);
+  transition: background-color var(--dur-fast) var(--ease);
+}
+.vault-table tbody tr:last-child { border-bottom: 0; }
+.vault-table tbody tr:hover { background: var(--inset); }
+.vault-table tbody th { font-weight: 400; }
+
+.vault-name { display: block; font-weight: 600; color: var(--foreground); }
+
+.vault-meta {
+  display: block;
+  margin-top: 1px;
+  font-size: var(--t-xs);
+  color: var(--faint-foreground);
+}
+
+.vault-curator { color: var(--muted-foreground); }
+
+.tag--vetted {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-pill);
+  background: var(--brand-dim);
+  color: var(--brand-ink);
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vault-table .apy {
+  font-size: var(--t-md);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--up);
+}
+.vault-table .size { color: var(--muted-foreground); }
+.vault-table .projection { color: var(--brand-ink); font-weight: 500; }
+
+.vault-foot {
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--border-soft);
+  background: var(--inset);
+  font-size: var(--t-xs);
+  line-height: 1.5;
+  color: var(--faint-foreground);
+}

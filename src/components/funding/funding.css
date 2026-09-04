@@ -1,0 +1,137 @@
+/*
+ * The funding card.
+ *
+ * Built to the same rules as the transaction card, because it is the same kind
+ * of object: a thing the user is about to commit money to. It reads quieter
+ * than a swap ticket — there is no quote, no slippage and no countdown here,
+ * and inventing that furniture would imply a precision this flow does not have.
+ */
+.fund {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.fund:hover { border-color: var(--brand-edge); }
+
+.fund-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--inset);
+}
+
+.fund-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--brand);
+}
+
+.fund-dot { width: 5px; height: 5px; background: var(--brand); }
+
+.fund-route {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  color: var(--faint-foreground);
+}
+
+.fund-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-4);
+  padding: var(--s-4);
+}
+
+.fund-figure { display: grid; gap: 0.15rem; min-width: 0; }
+.fund-figure--right { text-align: right; }
+
+.fund-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+.fund-asset {
+  font-size: var(--t-lg);
+  font-weight: 600;
+  letter-spacing: var(--track-tight);
+  color: var(--foreground);
+}
+
+.fund-where { font-size: var(--t-xs); color: var(--muted-foreground); }
+
+.fund-rate {
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--border-soft);
+  background: var(--inset);
+}
+
+.fund-rate-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.2rem 0 0;
+  font-size: var(--t-sm);
+  color: var(--foreground);
+}
+
+.fund-rate-est { color: var(--muted-foreground); }
+
+.fund-rate-note {
+  margin: var(--s-2) 0 0;
+  font-size: var(--t-xs);
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+.fund-terms {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--border-soft);
+  list-style: none;
+  font-size: var(--t-xs);
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+/* A hairline tick rather than a bullet glyph, matching the warning list on
+ * the transaction card. */
+.fund-terms li { position: relative; padding-left: var(--s-4); }
+.fund-terms li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 8px;
+  height: 1px;
+  background: var(--brand-edge);
+}
+
+.fund .btn-execute { width: calc(100% - var(--s-4) * 2); margin: 0 var(--s-4) var(--s-4); }
+
+.fund-note {
+  margin: 0;
+  padding: 0 var(--s-4) var(--s-4);
+  font-size: var(--t-xs);
+  color: var(--muted-foreground);
+}
+
+.fund-note--warn { color: var(--hold); }
+
+@media (max-width: 480px) {
+  .fund-body { grid-template-columns: 1fr; }
+  .fund-figure--right { text-align: left; }
+}

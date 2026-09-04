@@ -1,0 +1,289 @@
+/*
+ * The portfolio panel.
+ *
+ * Denser than the other cards on purpose — this is the one surface people
+ * scan rather than read, and whitespace between every row would push the
+ * second protocol below the fold. Hierarchy comes from scale contrast (one
+ * display figure, everything else at body size or smaller) rather than from
+ * boxes inside boxes.
+ */
+.pf {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.pf:hover { border-color: var(--brand-edge); box-shadow: var(--shadow-hover); }
+
+.pf-empty {
+  padding: var(--s-5) var(--s-4);
+  color: var(--muted-foreground);
+  font-size: var(--t-sm);
+  text-align: center;
+}
+
+/* ---- header ---------------------------------------------------------- */
+
+.pf-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--inset);
+}
+
+.pf-eyebrow {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+.pf-worth-value {
+  display: block;
+  margin-top: var(--s-1);
+  font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: var(--track-tight);
+  line-height: 1.05;
+}
+
+.pf-change {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-top: var(--s-1);
+  font-size: var(--t-sm);
+  font-weight: 500;
+}
+
+.pf-change.is-up { color: var(--up); }
+.pf-change.is-down { color: var(--down); }
+.pf-change.is-flat { color: var(--faint-foreground); }
+.pf-change-window { color: var(--faint-foreground); font-weight: 400; }
+
+.pf-stats {
+  display: grid;
+  grid-auto-flow: column;
+  gap: var(--s-5);
+  margin: 0;
+}
+
+.pf-stat dt {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+.pf-stat dd {
+  margin: 0.2rem 0 0;
+  font-size: var(--t-md);
+  font-weight: 600;
+  letter-spacing: var(--track-tight);
+}
+
+.pf-stat dd.is-up { color: var(--up); }
+.pf-stat dd.is-down { color: var(--down); }
+
+/* ---- allocation ------------------------------------------------------ */
+
+.pf-alloc { padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--border-soft); }
+
+.pf-alloc-bar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.pf-alloc-slice { display: block; min-width: 3px; border-radius: 1px; }
+.pf-alloc-slice.is-wallet { background: var(--muted-foreground); }
+.pf-alloc-slice.is-earning { background: var(--brand); }
+.pf-alloc-slice.is-supplied { background: var(--brand-dim); }
+
+.pf-alloc-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-xs);
+  color: var(--muted-foreground);
+}
+
+.pf-alloc-key li { display: inline-flex; align-items: center; gap: 0.4rem; }
+.pf-alloc-pct { color: var(--foreground); font-weight: 600; }
+
+.pf-dot { width: 7px; height: 7px; border-radius: 2px; }
+.pf-dot.is-wallet { background: var(--muted-foreground); }
+.pf-dot.is-earning { background: var(--brand); }
+.pf-dot.is-supplied { background: var(--brand-dim); }
+
+/* ---- bands ----------------------------------------------------------- */
+
+.pf-band + .pf-band { border-top: 1px solid var(--border-soft); }
+
+.pf-band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4) var(--s-2);
+}
+
+.pf-band-head h4 {
+  margin: 0;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.pf-band-note {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+/* Wide tables scroll inside their own container, never the page. */
+.pf-scroll { overflow-x: auto; }
+
+/* ---- tables ---------------------------------------------------------- */
+
+.pf-table { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+
+.pf-table th[scope='col'] {
+  padding: 0 var(--s-4) var(--s-2);
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.pf-table .col-num { text-align: right; }
+
+.pf-table tbody tr { border-top: 1px solid var(--border-soft); }
+.pf-table tbody tr:hover { background: var(--inset); }
+
+.pf-table td,
+.pf-table tbody th {
+  padding: var(--s-2) var(--s-4);
+  text-align: left;
+  font-weight: 400;
+  vertical-align: baseline;
+}
+
+.pf-table tbody .col-num { text-align: right; white-space: nowrap; }
+
+.pf-symbol { font-weight: 600; letter-spacing: -0.01em; }
+.pf-muted { color: var(--muted-foreground); }
+
+.pf-protocol {
+  display: inline-block;
+  margin-right: 0.45rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--brand-edge);
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--brand);
+  vertical-align: 0.05rem;
+}
+
+.pf-name { font-weight: 500; }
+
+.pf-delta.is-up { color: var(--up); }
+.pf-delta.is-down { color: var(--down); }
+.pf-delta.is-flat { color: var(--faint-foreground); }
+
+.is-up { color: var(--up); }
+.is-down { color: var(--down); }
+
+/* ---- aave ------------------------------------------------------------ */
+
+.pf-aave {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s-3);
+  padding: 0 var(--s-4) var(--s-4);
+}
+
+.pf-aave-card {
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+}
+
+/* The border carries the warning, so it reads before any text is parsed. */
+.pf-aave-card.is-watch { border-color: var(--hold); background: var(--hold-dim); }
+.pf-aave-card.is-danger { border-color: var(--down); background: var(--down-dim); }
+
+.pf-aave-card dl {
+  display: grid;
+  grid-auto-flow: column;
+  gap: var(--s-3);
+  margin: var(--s-2) 0 0;
+}
+
+.pf-aave-card dt {
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+.pf-aave-card dd { margin: 0.15rem 0 0; font-size: var(--t-sm); font-weight: 600; }
+
+.pf-health {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin: var(--s-3) 0 0;
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--border-soft);
+}
+
+.pf-health-value { font-size: var(--t-lg); font-weight: 600; letter-spacing: var(--track-tight); }
+.pf-health-note { font-size: var(--t-xs); color: var(--muted-foreground); }
+
+.is-danger .pf-health-value { color: var(--down); }
+.is-watch .pf-health-value { color: var(--hold); }
+
+/* ---- footer ---------------------------------------------------------- */
+
+.pf-foot {
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--border-soft);
+  background: var(--inset);
+}
+
+.pf-foot p { margin: 0; font-size: var(--t-xs); color: var(--muted-foreground); line-height: 1.5; }
+.pf-foot strong { color: var(--foreground); font-weight: 600; }
+.pf-unpriced { margin-top: var(--s-1) !important; }
+
+@media (max-width: 560px) {
+  .pf-stats { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+  .pf-head { align-items: flex-start; }
+}

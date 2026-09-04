@@ -1,0 +1,445 @@
+.app {
+  display: grid;
+  grid-template-areas: 'sidebar body';
+  grid-template-columns: auto minmax(0, 1fr);
+  height: 100dvh;
+}
+
+.app-body {
+  grid-area: body;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+}
+
+/* --- Header ------------------------------------------------------------ */
+.app-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.app-header-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-5);
+  min-height: 60px;
+}
+
+/* The wallet controls hold the right edge; everything else packs left. */
+.app-header-inner > :last-child { margin-left: auto; }
+
+.wordmark { display: flex; align-items: center; gap: var(--s-3); min-width: 0; }
+
+/*
+ * No plate behind the mark. A filled tile would make it a logo sitting on
+ * the header; drawn directly on the ground it reads as part of the
+ * instrument, which is what a plumb line is.
+ */
+.wordmark-mark {
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+/*
+ * Set hard: heavy, uppercase, tracked in until the letters nearly touch.
+ * A grotesk at 800 with negative tracking is a wordmark; the same face at
+ * 600 with default tracking is just a word.
+ */
+.wordmark h1 {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+.wordmark-rule { width: 1px; height: 16px; background: var(--border); }
+
+.wordmark-sub {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  white-space: nowrap;
+}
+
+/* --- Main --------------------------------------------------------------- */
+.app-main {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--s-5);
+}
+
+/*
+ * A new chat centres the greeting with the composer directly beneath it, the
+ * way a blank page invites a first line. Once there is a transcript the
+ * composer drops to the foot and the messages take the room.
+ */
+.app-main.is-new {
+  grid-template-rows: auto auto;
+  align-content: center;
+}
+
+.message-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  align-content: start;
+  gap: var(--s-6);
+  padding-block: var(--s-6) var(--s-5);
+  scrollbar-gutter: stable;
+}
+
+/* --- Turns -------------------------------------------------------------- */
+.turn {
+  display: grid;
+  gap: var(--s-2);
+  animation: turn-in 0.45s var(--ease) both;
+}
+
+@keyframes turn-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.turn-label { margin: 0; }
+
+/*
+ * The user's own words sit in an untinted inset well — quieter than Plumb's
+ * answer, which is the part carrying new information.
+ */
+.turn--user .turn-body {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--radius);
+  background: var(--inset);
+}
+
+.turn-text {
+  margin: 0;
+  max-width: 70ch;
+  color: var(--foreground);
+  white-space: pre-wrap;
+}
+
+.turn--agent .turn-body { display: grid; gap: var(--s-4); min-width: 0; }
+.turn--agent .prose { max-width: 72ch; }
+
+.turn-error {
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--down);
+  border-radius: var(--radius);
+  background: var(--down-dim);
+  color: var(--foreground);
+  font-size: var(--t-sm);
+}
+
+/* --- Thinking ----------------------------------------------------------- */
+.thinking { display: flex; align-items: center; gap: 6px; height: 1.4rem; }
+
+.thinking span {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--brand);
+  animation: blink 1.2s var(--ease) infinite;
+}
+.thinking span:nth-child(2) { animation-delay: 0.15s; }
+.thinking span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes blink {
+  0%, 65%, 100% { opacity: 0.2; }
+  32%           { opacity: 1; }
+}
+
+/* --- Composer ----------------------------------------------------------- */
+/*
+ * The composer is docked, and content scrolls beneath it. The hairline makes
+ * that read as a deliberate boundary rather than as content being clipped —
+ * which is exactly how it looked at narrow widths without one.
+ */
+.composer-region {
+  padding-block: var(--s-3) var(--s-5);
+  border-top: 1px solid var(--border-soft);
+  background: var(--background);
+}
+
+.app-main.is-new .composer-region { border-top: 0; padding-top: 0; }
+
+.prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-3);
+  padding: 0;
+  list-style: none;
+}
+
+.prompt {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: var(--t-sm);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease);
+}
+.prompt:hover {
+  border-color: var(--brand-edge);
+  color: var(--brand-ink);
+  transform: translateY(-1px);
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.composer:focus-within {
+  border-color: var(--brand-edge);
+  box-shadow: var(--shadow-card), 0 0 0 2px var(--brand-dim);
+}
+
+.composer textarea {
+  padding: 0.5rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  line-height: 1.5;
+  resize: none;
+}
+.composer textarea:focus { outline: none; }
+.composer textarea::placeholder { color: var(--faint-foreground); }
+
+/* Primary action: near-black, per the house style. Blue stays an accent. */
+.composer-send {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #0a0a0a;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+.composer-send:hover:not(:disabled) { background: var(--brand-ink); }
+.composer-send:disabled { background: var(--muted); color: var(--faint-foreground); cursor: not-allowed; }
+
+.composer-note {
+  margin: var(--s-3) 0 0;
+  font-size: var(--t-xs);
+  color: var(--faint-foreground);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .app-header-inner,
+  .app-main { padding-inline: var(--s-4); }
+  .wordmark-rule,
+  .wordmark-sub { display: none; }
+}
+
+/* --- Greeting ----------------------------------------------------------- */
+.greeting {
+  display: grid;
+  gap: var(--s-4);
+  padding-bottom: var(--s-5);
+  animation: turn-in 0.5s var(--ease) both;
+}
+
+/*
+ * The index sits above the heading so it, both heading lines, the lede, the
+ * prompts and the composer all share one left edge — the vertical the whole
+ * screen is measured against.
+ */
+.greeting-head {
+  display: grid;
+  justify-items: start;
+  gap: var(--s-3);
+}
+
+/* Numbered index with a rule running out of it: visible structure, and the
+ * only place on the opening screen that announces state. */
+.greeting-index {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--brand);
+}
+
+.greeting-index-rule {
+  display: block;
+  width: 44px;
+  height: 1px;
+  background: var(--brand-edge);
+}
+
+/*
+ * Set large and tracked hard. This is the one display-scale moment in the
+ * app, so it carries the weight the rest of the interface refuses to.
+ */
+.greeting-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.05rem + 2.3vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+/* --- Rotating capability line ------------------------------------------- */
+.capability { display: grid; gap: 0.1em; }
+
+.capability-lead { color: var(--foreground); }
+
+/*
+ * The phrase reserves its own line height so a shorter capability cannot
+ * collapse the block and shift everything below it on every rotation.
+ */
+.capability-phrase {
+  display: block;
+  min-height: 1.25em;
+  color: var(--brand);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.capability-phrase.is-leaving {
+  opacity: 0;
+  transform: translateY(-0.18em);
+}
+
+/*
+ * Each letter fades and lifts on a stagger, so the phrase assembles left to
+ * right. Only transform and opacity animate, so this stays on the compositor.
+ */
+.capability-word { display: inline-block; white-space: nowrap; }
+
+.capability-letter {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  animation: letter-in 0.32s var(--ease) forwards;
+}
+
+@keyframes letter-in {
+  from { opacity: 0; transform: translateY(0.3em); }
+  to   { opacity: 1; transform: none; }
+}
+
+/*
+ * With reduced motion the phrase is simply present: no per-letter reveal, and
+ * the component stops rotating, so nothing moves without being asked.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .capability-letter { opacity: 1; animation: none; }
+  .capability-phrase.is-leaving { opacity: 1; transform: none; }
+}
+
+.greeting-lede {
+  margin: 0;
+  max-width: 54ch;
+  font-size: var(--t-base);
+  color: var(--muted-foreground);
+}
+
+/*
+ * A ledger, not a card grid.
+ *
+ * Four rows stacked on shared hairlines with a collapsed border, so they read
+ * as one indexed list rather than four floating tiles. Tiles were the old
+ * shape and they are the most template-looking object in any AI-built UI.
+ */
+.greeting-prompts {
+  display: grid;
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  list-style: none;
+  border-block: 1px solid var(--border-soft);
+}
+
+.greeting-prompts li + li { border-top: 1px solid var(--border-soft); }
+
+.greeting-prompt {
+  display: grid;
+  grid-template-columns: 2ch 5.5ch 1fr auto;
+  align-items: baseline;
+  gap: var(--s-3);
+  width: 100%;
+  padding: 0.72rem var(--s-2);
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: var(--t-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+/* The row lights from the left, the way a selected line does on a desk. */
+.greeting-prompt:hover,
+.greeting-prompt:focus-visible {
+  background: var(--inset);
+  color: var(--foreground);
+}
+
+.greeting-prompt:hover .greeting-prompt-go,
+.greeting-prompt:focus-visible .greeting-prompt-go {
+  opacity: 1;
+  transform: none;
+}
+
+.greeting-prompt-no {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint-foreground);
+}
+
+.greeting-prompt-kind {
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.greeting-prompt:hover .greeting-prompt-kind,
+.greeting-prompt:focus-visible .greeting-prompt-kind { color: var(--brand); }
+
+.greeting-prompt-text { min-width: 0; }
+
+/* Present but retracted until the row is live, so four arrows are not
+ * competing for attention at rest. */
+.greeting-prompt-go {
+  color: var(--brand);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+
+@media (max-width: 640px) {
+  .greeting-prompts { grid-template-columns: 1fr; }
+}

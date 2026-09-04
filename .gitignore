@@ -1,0 +1,24 @@
+# Dependencies
+node_modules
+
+# Build output
+.next
+out
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets. `.env.example` is committed and holds placeholders only —
+# check it stays that way before every push.
+.env
+.env*.local
+
+# Local tooling
+.DS_Store
+.vercel
+screenshots
+
+# Claude Code: project-local machine settings, if any are ever added.
+# Shared config (.claude/settings.json) is worth committing; this is the
+# per-machine override that is not.
+.claude/settings.local.json

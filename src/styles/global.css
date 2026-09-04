@@ -1,0 +1,128 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { color-scheme: dark; font-size: 16px; }
+
+/*
+ * The ground is a measured grid, not a texture.
+ *
+ * Two repeating hairlines at a 32px pitch, at the threshold of visibility.
+ * It is there to be felt rather than read: it gives every panel edge
+ * something to align to and makes the density look intended instead of
+ * cramped. Fixed attachment so it reads as the surface the app sits on
+ * rather than something scrolling inside it.
+ */
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--background);
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-attachment: fixed;
+  color: var(--muted-foreground);
+  font-family: var(--ui);
+  font-size: var(--t-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  color: var(--foreground);
+  font-weight: 600;
+  letter-spacing: var(--track-tight);
+  line-height: 1.12;
+}
+
+button { font: inherit; color: inherit; }
+
+a { color: var(--brand-ink); text-underline-offset: 2px; }
+
+/* Square, like everything else. A rounded focus ring on hard corners reads
+ * as an accident rather than a decision. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 0;
+}
+
+::selection { background: var(--brand); color: #0a0a0a; }
+
+/*
+ * Figures are mono and tabular so columns align down the page and a value
+ * cannot change its own width as it updates — the difference between a
+ * dashboard and an instrument.
+ */
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * The house eyebrow: mono, uppercase, wide tracking. It labels data without
+ * competing with it, and repeated across every panel it is what makes the
+ * surfaces read as one system.
+ */
+.label {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+/*
+ * The signature: a plumb line.
+ *
+ * A hairline dropped from the top with a weight at the end — the oldest
+ * instrument for finding true vertical, and the thing the product is named
+ * for. Used as a section marker; the bob sits on the baseline of whatever it
+ * indexes. Pure CSS, visible immediately, no JS.
+ */
+.plumb-line {
+  position: relative;
+  display: inline-block;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--border) 20%, var(--brand-edge));
+}
+
+.plumb-line::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--brand);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Square, thin, and dim until used — a scrollbar is not a feature. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(232, 234, 240, 0.14);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(232, 234, 240, 0.28);
+  background-clip: content-box;
+}

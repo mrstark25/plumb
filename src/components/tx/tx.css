@@ -1,0 +1,455 @@
+/*
+ * The trade ticket — the one surface where a misread costs money.
+ *
+ * Built for scanning: a titled bar, one large pair of figures, a fact grid with
+ * aligned numerals, and a step ladder that reports its own progress. Structure
+ * comes from hairlines and inset tints rather than heavy shadow, matching the
+ * LCX card treatment.
+ */
+.tx-card {
+  display: grid;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+/* The house hover: the hairline turns brand-blue and the shadow warms to it. */
+.tx-card:hover {
+  border-color: var(--brand-edge);
+  box-shadow: var(--shadow-hover);
+}
+
+/* --- Title bar --- */
+.tx-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--inset);
+}
+
+.tx-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--brand-ink);
+}
+
+.tx-kind::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.tx-route {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  color: var(--faint-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 55%;
+}
+
+/* --- Legs --- */
+.tx-legs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-5) var(--s-4);
+}
+
+.tx-leg { display: grid; gap: 3px; min-width: 0; }
+.tx-leg--out { text-align: right; }
+
+.tx-leg-label {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+/* Scale contrast carries the hierarchy: the amount is the headline. */
+.tx-leg-amount {
+  font-size: clamp(1.4rem, 1.1rem + 1.3vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: var(--track-tight);
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.tx-leg-symbol { font-size: var(--t-sm); font-weight: 600; color: var(--muted-foreground); }
+.tx-leg-chain,
+.tx-leg-usd { font-size: var(--t-xs); color: var(--faint-foreground); }
+
+.tx-arrow {
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--faint-foreground);
+}
+
+/* --- Fact grid: hairline-separated cells --- */
+.tx-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--border-soft);
+}
+
+.tx-fact {
+  display: grid;
+  gap: 3px;
+  padding: var(--s-3) var(--s-4);
+  background: var(--card);
+}
+
+.tx-fact dt {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+.tx-fact dd { margin: 0; font-size: var(--t-sm); color: var(--foreground); }
+.tx-fact--warn dd { color: var(--hold); }
+
+/* --- Destination alert. Outranks everything else on the card. --- */
+.tx-alert {
+  margin: 0;
+  padding: var(--s-4);
+  border-bottom: 1px solid var(--border-soft);
+  border-left: 3px solid var(--down);
+  background: var(--down-dim);
+  font-size: var(--t-sm);
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+.tx-alert strong {
+  display: block;
+  color: var(--down);
+  letter-spacing: -0.01em;
+}
+
+.tx-alert .num { overflow-wrap: anywhere; }
+
+/* --- Warnings --- */
+.tx-warnings {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-4) var(--s-4) var(--s-4) 2.3rem;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--hold-dim);
+  list-style: none;
+  font-size: var(--t-sm);
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+.tx-warnings li { position: relative; }
+
+.tx-warnings li::before {
+  content: '';
+  position: absolute;
+  left: -1.1rem;
+  top: 0.5em;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--hold);
+}
+
+/* --- Step ladder --- */
+.tx-steps { display: grid; margin: 0; padding: 0; list-style: none; }
+
+.tx-step {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-soft);
+  transition: background-color var(--dur) var(--ease);
+}
+
+.tx-step-index {
+  display: grid;
+  place-items: center;
+  width: 22px; height: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 0.6875rem;
+  color: var(--faint-foreground);
+}
+
+.tx-step-body { min-width: 0; display: grid; gap: 1px; }
+.tx-step-label { margin: 0; font-size: var(--t-sm); font-weight: 600; color: var(--foreground); }
+.tx-step-detail { margin: 0; font-size: var(--t-xs); color: var(--faint-foreground); overflow-wrap: anywhere; }
+.tx-step-error { margin: 0; font-size: var(--t-xs); color: var(--down); }
+.tx-step-link { font-size: var(--t-xs); font-family: var(--mono); }
+
+.tx-step-status {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+  white-space: nowrap;
+}
+
+.tx-step--awaiting-signature { background: var(--brand-dim); }
+.tx-step--awaiting-signature .tx-step-index { border-color: var(--brand); color: var(--brand-ink); }
+.tx-step--awaiting-signature .tx-step-status { color: var(--brand-ink); }
+
+.tx-step--pending { background: var(--hold-dim); }
+.tx-step--pending .tx-step-status { color: var(--hold); }
+.tx-step--pending .tx-step-index {
+  border-color: var(--hold);
+  color: var(--hold);
+  animation: step-pulse 1.5s var(--ease) infinite;
+}
+
+@keyframes step-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--hold-dim); }
+  50%      { box-shadow: 0 0 0 5px transparent; }
+}
+
+.tx-step--confirmed .tx-step-index { border-color: var(--up); background: var(--up); color: #0a0a0a; }
+.tx-step--confirmed .tx-step-status { color: var(--up); }
+
+.tx-step--failed { background: var(--down-dim); }
+.tx-step--failed .tx-step-index { border-color: var(--down); color: var(--down); }
+.tx-step--failed .tx-step-status { color: var(--down); }
+
+/* --- Action --- */
+.tx-foot {
+  display: grid;
+  gap: var(--s-2);
+  justify-items: center;
+  padding: var(--s-4);
+  background: var(--inset);
+}
+
+/*
+ * The signing button — the single most consequential control in the app, and
+ * the one place amber is a fill rather than ink. Set in mono uppercase so it
+ * reads as an instruction rather than a suggestion.
+ */
+.btn-execute {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #0a0a0a;
+  font-family: var(--mono);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+/*
+ * No shimmer on hover. A sweeping gradient here is decoration on the one
+ * control that must read as sober, and the one it used to carry was a
+ * leftover from another brand's blue.
+ */
+.btn-execute:hover:not(:disabled) { background: var(--brand-ink); }
+
+.btn-execute:disabled {
+  background: var(--muted);
+  color: var(--faint-foreground);
+  cursor: not-allowed;
+}
+.btn-execute:disabled::after { display: none; }
+
+.tx-expiry {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  color: var(--faint-foreground);
+}
+
+.tx-done {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--up);
+}
+
+@media (max-width: 560px) {
+  .tx-legs { grid-template-columns: 1fr; }
+  .tx-leg--out { text-align: left; }
+  .tx-arrow { transform: rotate(90deg); justify-self: start; }
+}
+
+/* --- Vault deposit / withdrawal ---------------------------------------- */
+.tx-vault {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-4);
+  padding: var(--s-5) var(--s-4) var(--s-4);
+}
+
+.tx-vault-primary,
+.tx-vault-rate { display: grid; gap: 3px; min-width: 0; }
+
+.tx-vault-rate { text-align: right; }
+
+/* The rate is the decision, so it carries the same weight as the amount. */
+.tx-vault-apy {
+  font-size: clamp(1.4rem, 1.1rem + 1.3vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: var(--track-tight);
+  color: var(--up);
+}
+
+.tx-vault-name {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border-soft);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.tx-vault-curator {
+  font-size: var(--t-xs);
+  font-weight: 400;
+  color: var(--faint-foreground);
+}
+
+@media (max-width: 560px) {
+  .tx-vault { grid-template-columns: 1fr; }
+  .tx-vault-rate { text-align: left; }
+}
+
+/* --- Transfer ----------------------------------------------------------- */
+.tx-transfer {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-5) var(--s-4) var(--s-4);
+}
+
+.tx-transfer-amount { display: grid; gap: 3px; }
+
+.tx-transfer-to {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--inset);
+}
+
+/*
+ * Shown at full width and wrapped rather than truncated. A destination the
+ * reader cannot check character by character is the one failure here that
+ * cannot be undone.
+ */
+.tx-transfer-address {
+  font-size: var(--t-base);
+  line-height: 1.5;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* --- Leveraged position -------------------------------------------------- */
+.tx-position { display: grid; gap: var(--s-4); padding: var(--s-5) var(--s-4) var(--s-4); }
+
+.tx-position-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.tx-side {
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.tx-side--long { background: var(--up-dim); color: var(--up); }
+.tx-side--short { background: var(--down-dim); color: var(--down); }
+
+.tx-position-size {
+  font-size: clamp(1.4rem, 1.1rem + 1.3vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: var(--track-tight);
+  color: var(--foreground);
+}
+
+.tx-position-lev {
+  font-size: var(--t-md);
+  font-weight: 600;
+  color: var(--brand-ink);
+}
+
+.tx-position-notional { margin: 0; font-size: var(--t-sm); color: var(--muted-foreground); }
+
+/*
+ * The liquidation block is deliberately the loudest thing on the card. At high
+ * leverage it is the difference between a trade and a total loss, and burying
+ * it among the other facts would be a disservice.
+ */
+.tx-liq {
+  display: grid;
+  gap: 3px;
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--hold);
+  border-radius: var(--radius);
+  background: var(--hold-dim);
+}
+
+.tx-liq.is-near { border-left-color: var(--down); background: var(--down-dim); }
+
+.tx-liq-price {
+  font-size: var(--t-lg);
+  font-weight: 600;
+  letter-spacing: var(--track-tight);
+  color: var(--foreground);
+}
+
+.tx-liq-distance { font-size: var(--t-sm); color: var(--foreground); }
+.tx-liq.is-near .tx-liq-distance { color: var(--down); font-weight: 500; }
+.tx-liq-note { font-size: var(--t-xs); line-height: 1.5; color: var(--faint-foreground); }

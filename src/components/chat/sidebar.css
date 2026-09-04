@@ -1,0 +1,176 @@
+.sidebar {
+  grid-area: sidebar;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: var(--sidebar-w);
+  height: 100dvh;
+  border-right: 1px solid var(--border-soft);
+  background: var(--inset-solid);
+  overflow: hidden;
+  transition: width var(--dur) var(--ease);
+}
+
+.sidebar.is-collapsed { width: 0; border-right-width: 0; }
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  min-height: 60px;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.icon-button:hover { background: var(--muted); color: var(--foreground); }
+
+.new-chat {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.new-chat:hover { border-color: var(--brand-edge); background: var(--brand-dim); color: var(--brand-ink); }
+
+/* --- History ------------------------------------------------------------ */
+.sidebar-history {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--s-2) var(--s-3);
+}
+
+.history-group { margin-bottom: var(--s-4); }
+
+.history-group ul { margin: 0; padding: 0; list-style: none; }
+
+.history-label {
+  margin: 0 0 var(--s-1);
+  padding: 0 var(--s-2);
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint-foreground);
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border-radius: var(--radius);
+  transition: background-color var(--dur-fast) var(--ease);
+}
+.history-item:hover { background: var(--muted); }
+.history-item.is-active { background: var(--brand-dim); }
+
+.history-open {
+  min-width: 0;
+  padding: 0.4rem var(--s-2);
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: var(--t-sm);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.history-item:hover .history-open { color: var(--foreground); }
+.history-item.is-active .history-open { color: var(--brand-ink); font-weight: 500; }
+
+/* Destructive control stays hidden until the row is engaged. */
+.history-delete {
+  display: grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  margin-right: 2px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--faint-foreground);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.history-item:hover .history-delete,
+.history-delete:focus-visible { opacity: 1; }
+.history-delete:hover { color: var(--down); }
+
+.sidebar-empty {
+  margin: var(--s-2) var(--s-2) 0;
+  font-size: var(--t-sm);
+  line-height: 1.5;
+  color: var(--faint-foreground);
+}
+
+/* --- Footer ------------------------------------------------------------- */
+.sidebar-foot {
+  padding: var(--s-3);
+  border-top: 1px solid var(--border-soft);
+}
+
+.sidebar-foot p {
+  margin: 0;
+  font-size: var(--t-xs);
+  line-height: 1.5;
+  color: var(--faint-foreground);
+}
+
+.sidebar-clear {
+  margin-top: var(--s-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--faint-foreground);
+  font-size: var(--t-xs);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
+}
+.sidebar-clear:hover { color: var(--down); }
+
+/* --- Small screens: the sidebar becomes an overlay drawer ---------------- */
+.sidebar-scrim { display: none; }
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 30;
+    box-shadow: var(--shadow-float);
+  }
+
+  .sidebar-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    background: rgba(0, 0, 0, 0.66);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease);
+  }
+  .sidebar-scrim.is-visible { opacity: 1; pointer-events: auto; }
+}
