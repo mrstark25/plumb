@@ -15,8 +15,6 @@ import { buildPortfolio } from './handlers/portfolio';
 import { detectFundingIntent } from './handlers/funding';
 import { readPrices, type PriceArgs } from './handlers/prices';
 import { buildOpenPositionProposal, type OpenPositionArgs } from './handlers/position';
-import { describeMarket, readPositions, summarisePositions } from './handlers/perps';
-import { readPredictionMarkets, summariseMarkets, type PredictionArgs } from './handlers/predictions';
 import { hasApprovedAgent, hasApprovedBuilder } from '@/lib/providers/hyperliquid-info';
 import {
   buildDepositProposal, buildWithdrawProposal, listVaults,
@@ -51,14 +49,14 @@ const TOTAL_BUDGET_MS = 90_000;
  * against the per-minute token budget whether or not it is used, so a generous
  * ceiling here is paid for on every single round.
  */
-const MAX_REPLY_TOKENS = 400;
+const MAX_REPLY_TOKENS = 320;
 
 /**
  * How much conversation is resent each round. The whole history goes up on
  * every call, so an unbounded transcript makes later turns progressively more
  * expensive until they cannot fit the budget at all.
  */
-const MAX_HISTORY_MESSAGES = 10;
+const MAX_HISTORY_MESSAGES = 6;
 
 type Message = Groq.Chat.Completions.ChatCompletionMessageParam;
 
@@ -383,62 +381,6 @@ async function invokeTool(
         return {
           content: `[card displayed: deposit into ${proposal.route} at ${proposal.vault?.apy.toFixed(2)}% net APY, awaiting signature] Now write your own short reply about the curator and what earns the yield. Do not repeat the card's numbers and do not say it executed.`,
           attachment: { type: 'proposal', proposal },
-        };
-      }
-      case 'perps': {
-        const perpArgs = args as { action?: string; coin?: string; side?: string; notionalUsd?: number; leverage?: number };
-
-        if (perpArgs.action === 'positions') {
-          /*
-           * A market question needs no wallet, and refusing one pushed the
-           * model into answering from memory — it claimed BTC caps at 10x when
-           * Hyperliquid allows 40x. Market facts are always grounded now.
-           */
-          const market = perpArgs.coin ? await describeMarket(perpArgs.coin) : null;
-          const marketNote = market
-            ? `${market.asset.name} mid $${market.mid}, max leverage ${market.asset.maxLeverage}x. `
-            : '';
-
-          if (!wallet) {
-            return {
-              content: marketNote
-                ? `${marketNote}No wallet connected, so no account to report.`
-                : 'No wallet connected. Ask the user to connect one to see their Hyperliquid account.',
-            };
-          }
-
-          const { state, title } = await readPositions(
-            { ...(perpArgs.coin ? { coin: perpArgs.coin } : {}) },
-            wallet,
-          );
-          return { content: `${marketNote}[${title}] ${summarisePositions(state)}` };
-        }
-
-        const address = requireWallet(wallet);
-
-        if (!perpArgs.coin || !perpArgs.side || !perpArgs.notionalUsd) {
-          return { content: 'Error: opening a position needs coin, side (long/short) and notionalUsd.' };
-        }
-
-        const [agentApproved, builderApproved] = await Promise.all([
-          hasApprovedAgent(address, agentAddress),
-          hasApprovedBuilder(address),
-        ]);
-
-        const proposal = await buildOpenPositionProposal(
-          perpArgs as unknown as OpenPositionArgs,
-          { wallet: address, agentAddress, agentApproved, builderApproved },
-        );
-        return {
-          content: `[card displayed: ${proposal.route}, awaiting signature] Now write your own short reply about the liquidation risk at this leverage. Do not repeat the card's numbers and do not say it filled.`,
-          attachment: { type: 'proposal', proposal },
-        };
-      }
-      case 'predictions': {
-        const { markets, title } = await readPredictionMarkets(args as unknown as PredictionArgs);
-        return {
-          content: `[table displayed: ${markets.length} markets] Plumb is READ-ONLY on Polymarket — it cannot place bets. If the user asked to bet, say plainly that you cannot place it and that the card links to the market. Otherwise write a short prose reply on what the odds imply. Either way do not list the markets or repeat their numbers. Data for your reasoning only:\n${summariseMarkets(markets)}`,
-          attachment: { type: 'markets', title, markets },
         };
       }
       case 'portfolio': {

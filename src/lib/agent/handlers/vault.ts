@@ -2,8 +2,10 @@ import { getAddress, isAddress, type Address } from 'viem';
 import { chainName, resolveChain, type SupportedChainId } from '@/lib/chains';
 import { formatTokenAmount, parseAmount } from '@/lib/format';
 import { planApproval, readBalance } from '@/lib/erc20';
-import { readVaultForDeposit, readVaultPosition, vaultDepositTx, vaultRedeemTx } from '@/lib/erc4626';
+import { ERC4626_ABI, readVaultForDeposit, readVaultPosition, vaultDepositTx, vaultRedeemTx } from '@/lib/erc4626';
+import { publicClientFor } from '@/lib/viem';
 import { findVaultByAddress, findVaults } from '@/lib/providers/morpho';
+import { readAllMorphoPositions, readMorphoPositions } from '@/lib/providers/morpho-positions';
 import { getUsdPrice } from '@/lib/providers/prices';
 import type { MorphoVault } from '@/lib/providers/vault-types';
 import type { TxProposal, TxStep } from '@/types/tx';
@@ -154,21 +156,30 @@ export async function buildDepositProposal(args: DepositArgs, wallet: Address): 
 }
 
 export interface WithdrawArgs {
-  chain: string;
-  vaultAddress: string;
+  /**
+   * Optional. The wallet's own positions say which chain a vault is on, so
+   * asking the user is asking a question the app can already answer.
+   */
+  chain?: string;
+  /**
+   * Optional. An address, a vault name, or nothing at all — a withdrawal can
+   * be resolved from the positions the wallet actually holds.
+   */
+  vaultAddress?: string;
   amount?: string;
 }
 
+/** Words people use for a full exit. `parseAmount` would throw on all of them. */
+const FULL_EXIT_WORDS = new Set(['all', 'max', 'everything', 'full', 'entire', 'whole']);
+
+export function isFullExitAmount(amount: string | undefined): boolean {
+  if (amount === undefined || amount.trim() === '') return true;
+  return FULL_EXIT_WORDS.has(amount.trim().toLowerCase());
+}
+
 export async function buildWithdrawProposal(args: WithdrawArgs, wallet: Address): Promise<TxProposal> {
-  const chainId = resolveChain(args.chain);
-  if (!isAddress(args.vaultAddress)) {
-    throw new Error(`"${args.vaultAddress}" is not a valid vault address.`);
-  }
-  const vaultAddress = getAddress(args.vaultAddress);
-  const vault = await findVaultByAddress(chainId, vaultAddress);
-  if (!vault) {
-    throw new Error(`I could not find a listed Morpho vault at ${vaultAddress} on ${chainName(chainId)}.`);
-  }
+  const { chainId, vault } = await resolveWithdrawVault(wallet, args.chain, args.vaultAddress);
+  const vaultAddress = vault.address;
 
   const position = await readVaultPosition({ chainId, vault: vaultAddress, owner: wallet });
   if (position.shares === 0n) {
@@ -177,7 +188,7 @@ export async function buildWithdrawProposal(args: WithdrawArgs, wallet: Address)
 
   // Exit by shares, not by asset amount: redeeming shares the user actually
   // holds cannot revert on a share-price move between quote and signature.
-  const isFullExit = args.amount === undefined;
+  const isFullExit = isFullExitAmount(args.amount);
   const shares = isFullExit
     ? position.shares
     : sharesForAssets(parseAmount(args.amount!, vault.asset.decimals), position);
@@ -242,6 +253,153 @@ export async function buildWithdrawProposal(args: WithdrawArgs, wallet: Address)
     warnings: isFullExit ? [] : ['A partial exit leaves the rest of your position earning at the vault’s variable rate.'],
     expiresAt: Date.now() + QUOTE_TTL_MS,
   };
+}
+
+/**
+ * Which vault to exit.
+ *
+ * A withdrawal is the one case where the app already knows the answer: the
+ * wallet's Morpho positions say exactly which vaults it is in. Demanding a
+ * contract address for a vault the user is already inside — which is what this
+ * used to do, and what sent the agent back asking the user to paste a `0x`
+ * string — is asking a question the app can answer itself.
+ *
+ * Resolution runs from most to least specific: an explicit address, then a
+ * name matched against the user's own positions, then the single position they
+ * hold. Ambiguity is reported with the actual options rather than guessed at,
+ * because withdrawing from the wrong vault moves real money.
+ */
+async function resolveWithdrawVault(
+  owner: Address,
+  chain: string | undefined,
+  requested: string | undefined,
+): Promise<{ chainId: SupportedChainId; vault: MorphoVault }> {
+  const named = chain ? resolveChain(chain) : undefined;
+
+  if (requested && isAddress(requested)) {
+    // An address is only meaningful with a chain; default to where the wallet
+    // actually holds something at that address rather than refusing.
+    const chainId = named ?? (await chainHoldingVault(owner, getAddress(requested)));
+    const vault = await findVaultByAddress(chainId, getAddress(requested));
+    if (!vault) {
+      throw new Error(
+        `I could not find a listed Morpho vault at ${getAddress(requested)} on ${chainName(chainId)}.`,
+      );
+    }
+    return { chainId, vault };
+  }
+
+  /*
+   * A vault name outranks the chain.
+   *
+   * The model fills `chain` from whatever the wallet happens to be connected
+   * to, which is a guess, not a statement. Searching only there meant a user
+   * connected to Base could not exit a vault they hold on Ethereum — the
+   * position was found, named back to them, and then declared missing. When a
+   * name is given it is the stronger signal, so every chain is searched and
+   * the chain hint is used only to break a tie.
+   */
+  const searchAll = requested !== undefined || named === undefined;
+  const found = searchAll
+    ? await readAllMorphoPositions(owner)
+    : await readMorphoPositions(named, owner);
+
+  const positions =
+    named && found.some((position) => position.chainId === named) && !requested
+      ? found.filter((position) => position.chainId === named)
+      : found;
+
+  const where = named && !searchAll ? ` on ${chainName(named)}` : '';
+  if (positions.length === 0) {
+    throw new Error(`You have no Morpho vault positions${where}, so there is nothing to withdraw.`);
+  }
+
+  const byName = requested ? matchVaultName(positions, requested) : undefined;
+  // With a name matched on several chains, the chain hint breaks the tie.
+  const chosen =
+    byName ??
+    (requested
+      ? undefined
+      : positions.length === 1
+        ? positions[0]
+        : undefined);
+
+  if (!chosen) {
+    const held = positions
+      .map((position) => `${position.name} (${chainName(position.chainId)})`)
+      .join(', ');
+    throw new Error(
+      requested
+        ? `You have no position in a vault called "${requested}"${where}. You are in: ${held}.`
+        : `You have positions in more than one Morpho vault${where} — tell me which to exit: ${held}.`,
+    );
+  }
+
+  const listed = await findVaultByAddress(chosen.chainId, chosen.vault);
+  /*
+   * A withdrawal is never gated on the curated list.
+   *
+   * `findVaultByAddress` only returns vaults Morpho marks `listed: true` and
+   * that clear a TVL floor, which is exactly right for a deposit — it is what
+   * stops this app putting money into an unvetted vault. Applied to an exit it
+   * does the opposite of protecting anyone: a vault that is delisted, shrinks
+   * below the floor, or is simply missing from the indexer would leave a
+   * position permanently unwithdrawable through Plumb. Getting money out is
+   * always safe. The shares are already held; the vault is read from the chain
+   * rather than the index.
+   */
+  return {
+    chainId: chosen.chainId,
+    vault: listed ?? (await vaultFromPosition(chosen)),
+  };
+}
+
+/**
+ * Builds the minimum viable vault record for an exit, straight from the chain.
+ *
+ * Only what a withdrawal actually needs: the asset, its decimals and a name.
+ * APY and TVL are unknown here and are reported as zero rather than guessed —
+ * nothing on a withdrawal card depends on them, and inventing a rate for a
+ * vault the indexer has dropped would be the worst place to start.
+ */
+async function vaultFromPosition(position: {
+  chainId: SupportedChainId;
+  vault: Address;
+  name: string;
+  assetSymbol: string;
+  decimals: number;
+}): Promise<MorphoVault> {
+  const asset = await publicClientFor(position.chainId).readContract({
+    address: position.vault,
+    abi: ERC4626_ABI,
+    functionName: 'asset',
+  });
+
+  return {
+    address: position.vault,
+    chainId: position.chainId,
+    name: position.name,
+    symbol: '',
+    asset: { address: asset, symbol: position.assetSymbol, decimals: position.decimals },
+    netApy: 0,
+    totalAssetsUsd: 0,
+    // Unlisted by definition — the card says so instead of implying vetting.
+    isVetted: false,
+  };
+}
+
+/** Which chain the wallet actually holds shares of this vault on. */
+async function chainHoldingVault(owner: Address, vaultAddress: Address): Promise<SupportedChainId> {
+  const positions = await readAllMorphoPositions(owner);
+  const held = positions.find(
+    (position) => position.vault.toLowerCase() === vaultAddress.toLowerCase(),
+  );
+  if (!held) {
+    throw new Error(
+      `You hold no shares of ${vaultAddress} on any chain I support, so tell me the chain if you meant to withdraw there anyway.`,
+    );
+  }
+  return held.chainId;
 }
 
 /** Converts an asset amount to shares using the position's own current ratio. */

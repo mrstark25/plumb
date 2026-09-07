@@ -13,6 +13,7 @@ export const PUBLIC_RPC_URLS: Record<number, string> = {
   8453: 'https://mainnet.base.org',
   42161: 'https://arb1.arbitrum.io/rpc',
   137: 'https://polygon-bor-rpc.publicnode.com',
+  4663: 'https://rpc.mainnet.chain.robinhood.com',
 };
 
 /** Origins for the CSP, derived so the allow-list cannot fall out of step. */

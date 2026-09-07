@@ -66,6 +66,17 @@ const REGISTRY: readonly TokenInfo[] = [
   { chainId: 137, symbol: 'pUSD', name: 'Polymarket USD', decimals: 6, address: '0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB' },
   { chainId: 137, symbol: 'USDT', name: 'Tether USD', decimals: 6, address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F' },
   { chainId: 137, symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619' },
+  /*
+   * Robinhood Chain. Deliberately short: there is no canonical USDC, USDT or
+   * DAI on this chain yet, and the bridged token list already carries two
+   * different contracts both calling themselves USDG — exactly the collision
+   * this registry exists to keep out. Every address below had its symbol and
+   * decimals read from chain 4663 before being written down.
+   */
+  { chainId: 4663, symbol: 'ETH', name: 'Ether', decimals: 18, address: NATIVE_ADDRESS },
+  { chainId: 4663, symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, address: '0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73' },
+  { chainId: 4663, symbol: 'LINK', name: 'ChainLink Token', decimals: 18, address: '0x492641F648a4986844848E0beFE66D14817bCE34' },
+  { chainId: 4663, symbol: 'USDe', name: 'Ethena USDe', decimals: 18, address: '0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34' },
 ] as const;
 
 export function knownTokens(chainId: SupportedChainId): TokenInfo[] {

@@ -12,11 +12,18 @@ const estimateTokens = (text: string) => Math.ceil(text.length / 4);
  * exist so that adding a tool or a paragraph of guidance fails here rather
  * than silently making the app unusable on a free key.
  */
-const SYSTEM_PROMPT_CEILING = 600;
-const TOOL_SCHEMA_CEILING = 1_050;
+/*
+ * Lowered when Hyperliquid perps and Polymarket predictions were dropped from
+ * the payload. Both cost ~208 tokens on every round of every request and
+ * served none of the tracks this is built for, and the free Groq tier is
+ * 200,000 tokens a DAY — roughly fifty exchanges. The ceilings are set just
+ * above today's real size so any re-addition has to be a deliberate choice.
+ */
+const SYSTEM_PROMPT_CEILING = 540;
+const TOOL_SCHEMA_CEILING = 800;
 const TOKENS_PER_MINUTE = 8_000;
 const MAX_TOOL_ROUNDS = 3;
-const MAX_REPLY_TOKENS = 400;
+const MAX_REPLY_TOKENS = 320;
 
 function fixedOverhead(): number {
   const prompt = buildSystemPrompt({
@@ -76,7 +83,7 @@ describe('request payload budget', () => {
     const names = TOOL_DEFINITIONS.map((t) => t.function.name);
     assert.deepEqual(names.sort(), [
       'build_bridge', 'build_swap', 'build_transfer', 'earn',
-      'get_prices', 'perps', 'portfolio', 'predictions',
+      'get_prices', 'portfolio',
     ]);
     for (const tool of TOOL_DEFINITIONS) {
       assert.ok(tool.function.description.length > 30, `${tool.function.name} needs a real description`);

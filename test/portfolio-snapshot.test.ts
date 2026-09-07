@@ -10,17 +10,15 @@ import { beforeEach, describe, it, vi } from 'vitest';
  * source takes the rest of the portfolio down with it.
  */
 const readBalance = vi.fn();
-const getMarketPrices = vi.fn();
+const getSpotPrices = vi.fn();
 const getUsdPrice = vi.fn();
 const readAllAaveAccounts = vi.fn();
 const readAllMorphoPositions = vi.fn();
 const readSkyPosition = vi.fn();
 
 vi.mock('@/lib/erc20', () => ({ readBalance: (...args: unknown[]) => readBalance(...args) }));
-vi.mock('@/lib/providers/coingecko', () => ({
-  getMarketPrices: (...args: unknown[]) => getMarketPrices(...args),
-}));
 vi.mock('@/lib/providers/prices', () => ({
+  getSpotPrices: (...args: unknown[]) => getSpotPrices(...args),
   getUsdPrice: (...args: unknown[]) => getUsdPrice(...args),
 }));
 vi.mock('@/lib/providers/aave', async (importOriginal) => ({
@@ -43,16 +41,17 @@ function onlyBaseUsdc(usd = 1) {
   readBalance.mockImplementation(async ({ chainId, token }: { chainId: number; token: string }) =>
     chainId === 8453 && token.toLowerCase().startsWith('0x833589') ? 1_000_000n : 0n,
   );
-  getMarketPrices.mockResolvedValue({
+  getSpotPrices.mockResolvedValue({
     prices: [{ symbol: 'USDC', id: 'usd-coin', usd, change24hPct: 0, marketCapUsd: null, updatedAt: null }],
     unknown: [],
+    source: 'CoinGecko',
   });
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   readBalance.mockResolvedValue(0n);
-  getMarketPrices.mockResolvedValue({ prices: [], unknown: [] });
+  getSpotPrices.mockResolvedValue({ prices: [], unknown: [], source: 'CoinGecko' });
   getUsdPrice.mockResolvedValue(undefined);
   readAllAaveAccounts.mockResolvedValue([]);
   readAllMorphoPositions.mockResolvedValue([]);
@@ -97,7 +96,7 @@ describe('readPortfolioSnapshot', () => {
     readBalance.mockImplementation(async ({ chainId }: { chainId: number }) =>
       chainId === 8453 ? 1_000_000n : 0n,
     );
-    getMarketPrices.mockResolvedValue({ prices: [], unknown: ['USDC'] });
+    getSpotPrices.mockResolvedValue({ prices: [], unknown: ['USDC'], source: 'DefiLlama' });
     getUsdPrice.mockResolvedValue(undefined);
 
     const snapshot = await readPortfolioSnapshot(WALLET);
@@ -126,7 +125,7 @@ describe('readPortfolioSnapshot', () => {
     readBalance.mockImplementation(async ({ chainId }: { chainId: number }) =>
       chainId === 8453 ? 1_000_000n : 0n,
     );
-    getMarketPrices.mockResolvedValue({ prices: [], unknown: ['USDC'] });
+    getSpotPrices.mockResolvedValue({ prices: [], unknown: ['USDC'], source: 'DefiLlama' });
     getUsdPrice.mockResolvedValue(2);
 
     const snapshot = await readPortfolioSnapshot(WALLET);

@@ -2,8 +2,7 @@ import type { Address } from 'viem';
 import { CHAIN_IDS, type SupportedChainId } from '@/lib/chains';
 import { knownTokens } from '@/lib/tokens';
 import { readBalance } from '@/lib/erc20';
-import { getMarketPrices } from '@/lib/providers/coingecko';
-import { getUsdPrice } from '@/lib/providers/prices';
+import { getSpotPrices, getUsdPrice } from '@/lib/providers/prices';
 import { readAllAaveAccounts, type AaveAccount } from '@/lib/providers/aave';
 import { readAllMorphoPositions, type MorphoPosition } from '@/lib/providers/morpho-positions';
 import { readSkyPosition, type SkyPosition } from '@/lib/providers/sky';
@@ -143,13 +142,22 @@ async function readHoldings(owner: Address): Promise<Holding[]> {
   if (found.length === 0) return [];
 
   /*
-   * One market call for every symbol at once, rather than a price lookup per
-   * holding. It is fewer requests against a tier that rate-limits readily, and
-   * it is the only source here that carries a 24h change — which is the
-   * difference between a list of balances and a portfolio.
+   * One call for every symbol at once, rather than a price lookup per holding.
+   * Fewer requests against a tier that rate-limits readily, and it is the only
+   * source of the 24h change — which is the difference between a list of
+   * balances and a portfolio.
+   *
+   * Routed through `getSpotPrices` rather than straight at CoinGecko so a rate
+   * limit falls through to DefiLlama. It used to call CoinGecko alone, and a
+   * 429 there did not just cost the prices — it emptied the 24h column
+   * entirely, which is the headline figure on the panel.
    */
   const symbols = [...new Set(found.map((entry) => entry.token.symbol))];
-  const market = await getMarketPrices(symbols).catch(() => ({ prices: [], unknown: symbols }));
+  const market = await getSpotPrices(symbols).catch(() => ({
+    prices: [],
+    unknown: symbols,
+    source: 'DefiLlama' as const,
+  }));
   const bySymbol = new Map(market.prices.map((price) => [price.symbol.toUpperCase(), price]));
 
   return Promise.all(

@@ -27,6 +27,8 @@ const PLATFORM_IDS: Record<SupportedChainId, string> = {
   8453: 'base',
   42161: 'arbitrum-one',
   137: 'polygon-pos',
+  // Confirmed against CoinGecko's own /asset_platforms listing.
+  4663: 'robinhood',
 };
 
 /**

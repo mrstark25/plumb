@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { afterEach, describe, it, vi } from 'vitest';
 import { decodeFunctionData } from 'viem';
 import { ERC4626_ABI, vaultDepositTx, vaultRedeemTx } from '@/lib/erc4626';
-import { matchVaultName, sharesForAssets } from '@/lib/agent/handlers/vault';
+import { isFullExitAmount, matchVaultName, sharesForAssets } from '@/lib/agent/handlers/vault';
 
 const OWNER = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
 const VAULT = '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61';
@@ -176,5 +176,26 @@ describe('matchVaultName', () => {
     // Two vaults with the same name is ambiguous, not a coin flip.
     const dupes = [{ name: 'Same Vault' }, { name: 'Same Vault' }];
     assert.equal(matchVaultName(dupes, 'Same Vault'), undefined);
+  });
+});
+
+describe('full-exit wording', () => {
+  /*
+   * "withdraw all my USDC" used to reach `parseAmount("all")` and throw.
+   * A full exit is the most common withdrawal there is; it must not depend on
+   * the user omitting the amount entirely.
+   */
+  const cases = ['all', 'ALL', ' max ', 'everything', 'full', 'entire', 'whole', undefined, ''];
+
+  it('treats every natural phrasing of "all of it" as a full exit', () => {
+    for (const amount of cases) {
+      assert.equal(isFullExitAmount(amount), true, `failed on ${JSON.stringify(amount)}`);
+    }
+  });
+
+  it('still treats a real number as a partial withdrawal', () => {
+    for (const amount of ['10', '0.5', '1000']) {
+      assert.equal(isFullExitAmount(amount), false, `failed on ${amount}`);
+    }
   });
 });

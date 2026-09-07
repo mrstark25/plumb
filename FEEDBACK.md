@@ -46,6 +46,22 @@ priced better than dedicated aggregators. Measured, real quotes:
 The fill-time difference on ETH Ethereum → Arbitrum — **2 seconds versus 584** — is not a
 rounding detail. It changes what you can build.
 
+Re-measured on 6 September 2026, quoting both providers on the same inputs in the same
+second, output in base units:
+
+| Route | Uniswap | LI.FI | Δ |
+|---|---|---|---|
+| ETH Base → Arbitrum | **4994934372445455** | 4986140000000000 (Layerswap) | +0.18% |
+| USDC Base → Arbitrum | **4992398** | 4987500 (Eco) | +0.10% |
+| USDC Arbitrum → Base | **4996092** | 4983595 (Across V4) | +0.25% |
+| ETH Base → Robinhood Chain | 4910162209007326 | **4964635241004893** (Relay) | −1.10% |
+
+Uniswap is the venue this app routes to by default and it earns that on three of the four.
+The exception is instructive and is the reason for the ask in §3 below: **Robinhood Chain
+(4663) launched on 1 July 2026, and Uniswap already quotes it — but 1.1% behind a
+specialist.** Coverage arrived before competitive pricing did, which is the right order,
+and an integrator has no way to know which of the two they are getting.
+
 **Ask:** put this on the front page of the Trading API docs. We found it by passing
 mismatched chain ids on a hunch. Teams that don't try that will integrate a separate
 bridge aggregator they didn't need.
@@ -57,7 +73,24 @@ afternoon. The API returning an explicit `cancel` transaction alongside `approva
 we got it right without knowing the quirk existed. This is the API doing real work on the
 integrator's behalf and it deserves more credit than it gets in the docs.
 
-### 3. `estimatedFillTimeMs` on bridge quotes
+### 3. Bridge coverage reaches new chains before swap coverage does
+
+Adding Robinhood Chain (4663, an Orbit L2, mainnet 1 July 2026) surfaced a
+useful asymmetry: `/quote` **bridges** Base → 4663 happily, routing through
+Across, while a same-chain quote on 4663 answers
+`ResourceNotFound: No quotes available`.
+
+That is a reasonable state of affairs — bridging needs a route, swapping needs
+liquidity — but the two failures are indistinguishable from the outside. Both
+are a quote request that does not come back. We only learned which was which by
+trying both.
+
+**Ask:** expose supported chains and, per chain, which routing types are
+available. A `GET /v1/chains` returning `{ chainId, swap: bool, bridge: bool }`
+would let an integrator light up a new chain the day it is bridgeable, instead
+of discovering the boundary by probing.
+
+### 4. `estimatedFillTimeMs` on bridge quotes
 
 We surface this directly on the confirmation card. Users care more about "when does this
 land" than about the last basis point, and most bridge APIs make you guess.

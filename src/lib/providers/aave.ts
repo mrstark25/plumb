@@ -10,11 +10,14 @@ import { CHAIN_IDS, type SupportedChainId } from '@/lib/chains';
  * page. A wrong pool address would not throw — it would read zero and report
  * a healthy, empty account for someone who is actually borrowing.
  */
-const POOL_ADDRESSES: Record<SupportedChainId, Address> = {
+const POOL_ADDRESSES: Partial<Record<SupportedChainId, Address>> = {
   1: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
   8453: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5',
   42161: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
   137: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  // Robinhood Chain (4663) has no Aave v3 deployment. Absent rather than
+  // zeroed: a pool address that is not there must never be called, and a
+  // silent zero-address read would report a healthy empty account.
 };
 
 const POOL_ABI = [
@@ -82,9 +85,12 @@ export async function readAaveAccount(
   chainId: SupportedChainId,
   owner: Address,
 ): Promise<AaveAccount | null> {
+  const pool = POOL_ADDRESSES[chainId];
+  if (!pool) return null;
+
   const [collateral, debt, , liquidationThreshold, ltv, healthFactor] =
     await publicClientFor(chainId).readContract({
-      address: POOL_ADDRESSES[chainId],
+      address: pool,
       abi: POOL_ABI,
       functionName: 'getUserAccountData',
       args: [owner],

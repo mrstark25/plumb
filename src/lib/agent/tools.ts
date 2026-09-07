@@ -9,7 +9,7 @@
  * Optional parameters must accept null — models emit an explicit null for
  * arguments they mean to omit, and the API rejects the whole call otherwise.
  */
-const CHAIN = 'ethereum|base|arbitrum|polygon';
+const CHAIN = 'ethereum|base|arbitrum|polygon|robinhood';
 const AMOUNT = 'Decimal, e.g. "1.5". Not wei.';
 
 export const TOOL_DEFINITIONS = [
@@ -99,47 +99,13 @@ export const TOOL_DEFINITIONS = [
           action: { type: 'string', enum: ['pools', 'vaults', 'deposit', 'withdraw'] },
           chain: { type: ['string', 'null'], description: CHAIN },
           asset: { type: ['string', 'null'], description: 'e.g. "USDC".' },
-          amount: { type: ['string', 'null'], description: AMOUNT },
+          amount: { type: ['string', 'null'], description: `${AMOUNT} Omit to exit fully.` },
           amountUsd: { type: ['number', 'null'], description: 'USD principal, for pools.' },
           stablecoinsOnly: { type: ['boolean', 'null'] },
           riskTolerance: { type: ['string', 'null'], enum: ['low', 'medium', 'high', null] },
-          vaultAddress: { type: ['string', 'null'], description: 'Address or vault name. Omit on deposit to take the best.' },
+          vaultAddress: { type: ['string', 'null'], description: 'Address or name; omit for best/your only one.' },
         },
         required: ['action'],
-      },
-    },
-  },
-  {
-    type: 'function' as const,
-    function: {
-      name: 'perps',
-      description:
-        'Hyperliquid perps. open = new position; positions = market limits, price, account. Use for max-leverage questions.',
-      parameters: {
-        type: 'object',
-        properties: {
-          action: { type: 'string', enum: ['open', 'positions'] },
-          coin: { type: ['string', 'null'], description: 'e.g. "BTC".' },
-          side: { type: ['string', 'null'], enum: ['long', 'short', null] },
-          notionalUsd: { type: ['number', 'null'], description: 'USD size. Min 10.' },
-          leverage: { type: ['number', 'null'], description: 'Defaults to 1.' },
-        },
-        required: ['action'],
-      },
-    },
-  },
-  {
-    type: 'function' as const,
-    function: {
-      name: 'predictions',
-      description:
-        'Polymarket odds; read-only. Call when asked to bet too.',
-      parameters: {
-        type: 'object',
-        properties: {
-          topic: { type: ['string', 'null'], description: 'Keywords. Omit for top.' },
-        },
-        required: [],
       },
     },
   },

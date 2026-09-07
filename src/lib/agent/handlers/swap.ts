@@ -1,5 +1,5 @@
 import type { Address } from 'viem';
-import { chainName, resolveChain } from '@/lib/chains';
+import { canSwapOn, chainName, resolveChain } from '@/lib/chains';
 import { formatTokenAmount, parseAmount } from '@/lib/format';
 import { readBalance } from '@/lib/erc20';
 import { isUniswapConfigured, quoteSwap as quoteUniswap } from '@/lib/providers/uniswap';
@@ -23,6 +23,22 @@ export async function buildSwapProposal(
   wallet: Address,
 ): Promise<TxProposal> {
   const chainId = resolveChain(args.chain);
+
+  /*
+   * Refused here rather than three calls deeper.
+   *
+   * Neither swap venue this app uses quotes Robinhood Chain — Uniswap answers
+   * `ResourceNotFound: No quotes available` for chain 4663 — so without this
+   * the user waits for two providers to fail and gets an upstream error that
+   * explains nothing. Bridging to and from the chain does work, so the refusal
+   * says that rather than implying the chain is unsupported outright.
+   */
+  if (!canSwapOn(chainId)) {
+    throw new Error(
+      `There is no swap venue I can reach on ${chainName(chainId)} — neither Uniswap nor OpenOcean quotes it. I can bridge assets to and from it, and read balances there, but a swap has to happen on another chain.`,
+    );
+  }
+
   const [from, to] = await Promise.all([
     resolveToken(chainId, args.fromToken),
     resolveToken(chainId, args.toToken),

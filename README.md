@@ -17,7 +17,7 @@ A chat box that executes on-chain. Say what you want in plain English — *"swap
 | Cross-chain bridging | Uniswap Trading API (`routing: BRIDGE`), with LI.FI as the coverage fallback |
 | Yield questions | DefiLlama live pool data, filtered for size and sustainability |
 | Earning on deposits | Morpho vaults — deposit and withdraw directly, ERC-4626 |
-| Prices | CoinGecko free tier, with DefiLlama as fallback |
+| Prices | CoinGecko free tier, with DefiLlama as a full-fidelity fallback (price + 24h) |
 | Leveraged perps | Hyperliquid — long/short with leverage, optional builder code |
 | Prediction markets | Polymarket odds (read-only — see below) |
 | Portfolio | Holdings, Morpho / Sky / Aave positions, 24h move — one panel |
@@ -25,7 +25,17 @@ A chat box that executes on-chain. Say what you want in plain English — *"swap
 | Balance questions | Direct on-chain reads via viem |
 | Everything else DeFi | Groq-hosted Llama 3.3, grounded in the tools above |
 
-Supported chains: **Ethereum, Base, Arbitrum, Polygon**.
+Supported chains: **Ethereum, Base, Arbitrum, Polygon, Robinhood Chain**.
+
+Robinhood Chain (4663) is supported narrowly and deliberately. Bridging to and
+from it works, balances and prices resolve, and Multicall3 is deployed so reads
+still batch — but **no swap venue this app can reach quotes it**, so a swap
+there is refused with that reason rather than failing three calls deep. There
+is also no canonical USDC, USDT or DAI on the chain yet, and its bridged token
+list already carries two different contracts both called `USDG`, so the
+registry holds only ETH, WETH, LINK and USDe — each with symbol and decimals
+read from chain 4663 before being written down. Aave, Morpho and Sky are not
+deployed there and are skipped rather than called.
 
 ## Uniswap integration
 
@@ -309,7 +319,10 @@ Two presentation details: the "destination is not your wallet" alarm that fires 
 Spot prices, 24h change and market cap come from CoinGecko's free tier, which needs no key. Two details are handled at the boundary:
 
 - **Symbols resolve from a vetted map, never a search.** Dozens of tokens share a ticker, and a search would happily return a scam coin's price for "USDC" — the same reasoning that stops the app guessing a contract address from a symbol.
-- **A rate limit slows an answer down, it does not remove it.** The keyless tier 429s readily, so a failure falls back to DefiLlama, which prices the same assets by their CoinGecko id. The fallback carries no 24h change or market cap, and the card renders those as unknown rather than inventing them — it also names which source actually answered.
+- **A rate limit slows an answer down, it does not remove it.** The keyless tier 429s readily, so a failure falls back to DefiLlama, which prices the same assets by their CoinGecko id — the identity mapping is shared, only the transport differs. The card names which source actually answered.
+- **The fallback carries 24h movement too.** It used not to, and that was a quiet hole rather than a cosmetic one: the portfolio panel reads its headline 24h figure from this call, so a CoinGecko 429 did not merely change the source — it emptied the number, with nothing visibly failing. DefiLlama's own `/percentage` endpoint is now fetched alongside the price, in parallel, and a failure there costs the change but never the price. Market cap it genuinely does not serve, and that stays unknown rather than being approximated.
+- **DefiLlama's confidence score is enforced.** It scores every price it serves, and a thin or stale market scores low. Below 0.8 the price is treated as unknown rather than displayed — the same rule as everywhere else here, where a figure nobody can stand behind is worse than a blank.
+- **The portfolio uses the same fallback chain.** It called CoinGecko directly until this landed, so one 429 took out every price *and* every 24h figure on the panel at once.
 
 Contract-level pricing (the USD figures on swap and deposit cards) goes through the same pair, CoinGecko first. Note CoinGecko lower-cases contract addresses in its response keys, which is easy to miss.
 
@@ -330,6 +343,18 @@ people and stalled the deposit entirely. Matching by name is no weaker than
 matching by address: both resolve against the listed set, so an unlisted or
 invented vault is still refused, and an ambiguous prefix is refused rather than
 guessed. The name is a lookup key, never a contract.
+
+**A withdrawal is never gated on the curated list.** `findVaultByAddress` only
+returns vaults Morpho marks `listed: true` and that clear a TVL floor, which is
+exactly right for a deposit — it is what stops this app putting money into an
+unvetted vault. Applied to an exit it does the opposite of protecting anyone: a
+vault that is delisted, shrinks below the floor, or drops out of the indexer
+would leave a real position permanently unwithdrawable through Plumb. Getting
+money out is always safe, so an exit falls back to reading the vault straight
+off the chain. A withdrawal also needs neither an address nor a chain — the
+wallet's own positions say which vaults it is in and where, and a named vault
+is searched on every chain because the model fills `chain` from whatever the
+wallet happens to be connected to, which is a guess rather than a statement.
 
 Only `listed: true` vaults are surfaced, with Morpho's own RED risk warnings filtered out — anyone can deploy a vault, and an unfiltered APY sort is dominated by test deployments holding a few dollars. A vault named by address is verified against that same listed set before Plumb will build a deposit.
 
@@ -425,7 +450,7 @@ Built on the LCX DeFi design system, taken from `defi.lcx.com`'s own token block
 npm run dev            # dev server
 npm run build          # production build
 npm run typecheck      # tsc --noEmit
-npm test               # unit tests (297, 85% statement coverage)
+npm test               # unit tests (317, 85% statement coverage)
 npm run test:coverage  # with coverage
 npm run smoke          # live check against all four upstream APIs
 npm run shots          # visual check at 4 breakpoints (needs `npm run dev` running)
